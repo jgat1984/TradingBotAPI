@@ -1,0 +1,21 @@
+# Visual Studio
+.vs/
+*.vsidx
+*.user
+*.suo
+
+# Build outputs
+bin/
+obj/
+out/
+
+# Packages
+*.nupkg
+*.snupkg
+packages/
+
+# Databases
+*.db
+
+# Logs
+*.log
