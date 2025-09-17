@@ -26,14 +26,23 @@ namespace TradingBotAPI.Controllers
 
         // ✅ Start Grid Bot
         [HttpPost("start-gridbot")]
-        public IActionResult StartGridBot([FromBody] GridBotRequest request)
+        public async Task<IActionResult> StartGridBot([FromBody] GridBotRequest request)
         {
             if (request == null)
                 return BadRequest("Invalid request");
 
+            // ✅ fetch current price
+            var currentPrice = await _kraken.GetLatestPriceAsync("XRPUSD");
+
+            // ✅ auto-populate defaults if not provided
+            if (request.Lower <= 0)
+                request.Lower = decimal.Round(currentPrice * 0.98m, 4); // 2% below
+            if (request.Upper <= 0)
+                request.Upper = decimal.Round(currentPrice * 1.02m, 4); // 2% above
+
             _tradingService.StartGridBot(request.Lower, request.Upper, request.Grids, request.Investment);
 
-            // ✅ Explicitly map properties for frontend
+            // ✅ return config to frontend
             return Ok(new
             {
                 lower = request.Lower,
@@ -60,7 +69,7 @@ namespace TradingBotAPI.Controllers
             return Ok(trades);
         }
 
-        // ✅ Get Latest Price from Kraken
+        // ✅ Get Latest Price
         [HttpGet("get-latest-price")]
         public async Task<IActionResult> GetLatestPrice([FromQuery] string pair = "XRPUSD")
         {
