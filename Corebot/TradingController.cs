@@ -48,7 +48,7 @@ namespace TradingBotAPI.Controllers
         }
 
         // --------------------------
-        // GET TRADES
+        // GET ALL TRADES
         // --------------------------
         [HttpGet("trades")]
         public IActionResult GetTrades()
@@ -78,7 +78,7 @@ namespace TradingBotAPI.Controllers
         }
 
         // --------------------------
-        // GET GRID LEVELS (new)
+        // GET GRID LEVELS
         // --------------------------
         [HttpGet("grid-levels")]
         public IActionResult GetGridLevels(decimal lower, decimal upper, int grids)
