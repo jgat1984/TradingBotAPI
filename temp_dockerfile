@@ -1,0 +1,36 @@
+# =========================
+# BUILD STAGE
+# =========================
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /app
+
+# Copy solution and all project files first (for better caching)
+COPY JasonsCryptoProject.sln ./
+COPY TradingBotAPI/TradingBotAPI.csproj TradingBotAPI/
+
+# Restore dependencies (solution level)
+RUN dotnet restore ./JasonsCryptoProject.sln
+
+# Copy everything else
+COPY . ./
+
+# Publish TradingBotAPI (depends on CoreBot etc.)
+RUN dotnet publish ./TradingBotAPI/TradingBotAPI.csproj -c Release -o out
+
+# =========================
+# RUNTIME STAGE
+# =========================
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+
+# Copy published output
+COPY --from=build /app/out .
+
+# Set environment + expose port
+ENV ASPNETCORE_URLS=http://+:10000
+ENV DOTNET_RUNNING_IN_CONTAINER=true
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+EXPOSE 10000
+
+# Start the app
+ENTRYPOINT ["dotnet", "TradingBotAPI.dll"]
