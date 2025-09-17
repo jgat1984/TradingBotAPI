@@ -1,39 +1,34 @@
-﻿using TradingBotAPI.CoreBot;      // For DatabaseHelper, Repositories, Models
-using TradingBotAPI.Services;     // For TradingService
+using TradingBotAPI.CoreBot;
+using TradingBotAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register app services
 builder.Services.AddSingleton<TradingService>();
 builder.Services.AddSingleton<TradeRepository>();
 builder.Services.AddSingleton<PnLRepository>();
 
-// Add CORS policy
+// ✅ Global CORS setup
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReactApp",
-        policy =>
-        {
-            policy.WithOrigins(
-                "http://localhost:3000",                   // Local dev
-                "https://your-frontend-app.onrender.com"   // ✅ Replace with your deployed React frontend
+    options.AddDefaultPolicy(policy =>
+    {
+        policy
+            .WithOrigins(
+                "http://localhost:3000",
+                "https://trading-bot-frontend-xi.vercel.app"
             )
             .AllowAnyHeader()
-            .AllowAnyMethod();
-        });
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
 });
 
-// Register controllers
 builder.Services.AddControllers();
-
-// Register Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Initialize DB
 DatabaseHelper.EnsureSchema();
 
-// ✅ Force Kestrel to listen on port 8080 (Render requirement)
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.ListenAnyIP(8080);
@@ -41,24 +36,24 @@ builder.WebHost.ConfigureKestrel(options =>
 
 var app = builder.Build();
 
-// Enable static files (for swagger-custom.css)
 app.UseStaticFiles();
 
-// ✅ Enable Swagger UI so routes are visible
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "TradingBot API v1");
-    c.InjectStylesheet("/swagger-custom.css"); // custom dark theme if you want
+    c.InjectStylesheet("/swagger-custom.css");
 });
 
-app.UseCors("AllowReactApp");
+// ✅ CORS MUST go here before controllers
+app.UseCors();
 
-// Middleware
 app.UseAuthorization();
+
+// ✅ Controllers after CORS
 app.MapControllers();
 
-// ✅ Root endpoint for Render healthcheck & default landing page
-app.MapGet("/", () => Results.Ok("TradingBotAPI is live 🚀"));
+app.MapGet("/", () => Results.Text("TradingBotAPI is live 🚀", "text/plain"));
+app.MapGet("/health", () => Results.Ok(new { status = "Healthy ✅" }));
 
 app.Run();
