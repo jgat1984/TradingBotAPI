@@ -14,9 +14,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp",
         policy =>
         {
-            policy.WithOrigins("http://localhost:3000")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
+            policy.WithOrigins(
+                "http://localhost:3000",                   // Local dev
+                "https://your-frontend-app.onrender.com"   // ✅ Replace with your deployed React frontend
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod();
         });
 });
 
@@ -55,9 +58,7 @@ app.UseCors("AllowReactApp");
 app.UseAuthorization();
 app.MapControllers();
 
-// ❌ Removed hardcoded localhost ports
-// app.Urls.Clear();
-// app.Urls.Add("http://localhost:5126");
-// app.Urls.Add("https://localhost:7126");
+// ✅ Root endpoint for Render healthcheck & default landing page
+app.MapGet("/", () => Results.Ok("TradingBotAPI is live 🚀"));
 
 app.Run();
