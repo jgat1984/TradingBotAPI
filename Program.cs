@@ -30,6 +30,12 @@ builder.Services.AddSwaggerGen();
 // Initialize DB
 DatabaseHelper.EnsureSchema();
 
+// ✅ Force Kestrel to listen on port 8080 (Render requirement)
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(8080);
+});
+
 var app = builder.Build();
 
 // Enable static files (for swagger-custom.css)
@@ -49,9 +55,9 @@ app.UseCors("AllowReactApp");
 app.UseAuthorization();
 app.MapControllers();
 
-// ✅ Force backend to use port 5126 (HTTP) and 7126 (HTTPS)
-app.Urls.Clear();
-app.Urls.Add("http://localhost:5126");
-app.Urls.Add("https://localhost:7126");
+// ❌ Removed hardcoded localhost ports
+// app.Urls.Clear();
+// app.Urls.Add("http://localhost:5126");
+// app.Urls.Add("https://localhost:7126");
 
 app.Run();
