@@ -31,18 +31,18 @@ namespace TradingBotAPI.Controllers
             if (request == null)
                 return BadRequest("Invalid request");
 
-            // ✅ fetch current price
+            // ✅ fetch current price from Kraken
             var currentPrice = await _kraken.GetLatestPriceAsync("XRPUSD");
 
-            // ✅ auto-populate defaults if not provided
+            // ✅ auto-populate if missing or 0
             if (request.Lower <= 0)
-                request.Lower = decimal.Round(currentPrice * 0.98m, 4); // 2% below
+                request.Lower = decimal.Round(currentPrice * 0.98m, 4);
             if (request.Upper <= 0)
-                request.Upper = decimal.Round(currentPrice * 1.02m, 4); // 2% above
+                request.Upper = decimal.Round(currentPrice * 1.02m, 4);
 
             _tradingService.StartGridBot(request.Lower, request.Upper, request.Grids, request.Investment);
 
-            // ✅ return config to frontend
+            // ✅ return values so frontend can populate inputs
             return Ok(new
             {
                 lower = request.Lower,
