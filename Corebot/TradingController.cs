@@ -34,11 +34,13 @@ namespace TradingBotAPI.Controllers
             // ✅ fetch current price from Kraken
             var currentPrice = await _kraken.GetLatestPriceAsync("XRPUSD");
 
-            // ✅ auto-populate if missing or 0
+            // ✅ auto-populate defaults if missing or 0
             if (request.Lower <= 0)
-                request.Lower = decimal.Round(currentPrice * 0.98m, 4);
+                request.Lower = decimal.Round(currentPrice * 0.98m, 4); // -2%
             if (request.Upper <= 0)
-                request.Upper = decimal.Round(currentPrice * 1.02m, 4);
+                request.Upper = decimal.Round(currentPrice * 1.02m, 4); // +2%
+            if (request.Grids <= 0)
+                request.Grids = 4; // default 4 grids
 
             _tradingService.StartGridBot(request.Lower, request.Upper, request.Grids, request.Investment);
 
