@@ -31,10 +31,10 @@ namespace TradingBotAPI.Controllers
             if (request == null)
                 return BadRequest("Invalid request");
 
-            // ✅ fetch current price from Kraken
+            // fetch current price
             var currentPrice = await _kraken.GetLatestPriceAsync("XRPUSD");
 
-            // ✅ auto-populate defaults if missing or 0
+            // auto defaults
             if (request.Lower <= 0)
                 request.Lower = decimal.Round(currentPrice * 0.98m, 4); // -2%
             if (request.Upper <= 0)
@@ -44,7 +44,6 @@ namespace TradingBotAPI.Controllers
 
             _tradingService.StartGridBot(request.Lower, request.Upper, request.Grids, request.Investment);
 
-            // ✅ return values to frontend
             return Ok(new
             {
                 lower = request.Lower,
@@ -63,14 +62,12 @@ namespace TradingBotAPI.Controllers
             return Ok(new { message = "Grid Bot stopped" });
         }
 
-        // ✅ Preview Grid Bot (new endpoint)
+        // ✅ Preview Grid Bot (does not start, only shows suggested values)
         [HttpGet("preview-gridbot")]
         public async Task<IActionResult> PreviewGridBot([FromQuery] decimal investment = 0)
         {
-            // fetch current price from Kraken
             var currentPrice = await _kraken.GetLatestPriceAsync("XRPUSD");
 
-            // calculate suggested defaults
             var lower = decimal.Round(currentPrice * 0.98m, 4); // -2%
             var upper = decimal.Round(currentPrice * 1.02m, 4); // +2%
             var grids = 4;
@@ -113,7 +110,7 @@ namespace TradingBotAPI.Controllers
         }
     }
 
-    // ✅ Strongly typed request model
+    // ✅ Request model
     public class GridBotRequest
     {
         public decimal Lower { get; set; }
