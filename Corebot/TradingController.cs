@@ -40,10 +40,11 @@ namespace TradingBotAPI.Controllers
             if (request.Upper <= 0)
                 request.Upper = decimal.Round(currentPrice * 1.02m, 4); // +2%
             if (request.Grids <= 0)
-                request.Grids = 4;
+                request.Grids = 4; // default grids
 
             _tradingService.StartGridBot(request.Lower, request.Upper, request.Grids, request.Investment);
 
+            // ✅ return calculated values to frontend
             return Ok(new
             {
                 lower = request.Lower,
@@ -62,7 +63,7 @@ namespace TradingBotAPI.Controllers
             return Ok(new { message = "Grid Bot stopped" });
         }
 
-        // ✅ Preview Grid Bot (does not start, only shows suggested values)
+        // ✅ Preview Grid Bot (does not start bot, only shows suggested values)
         [HttpGet("preview-gridbot")]
         public async Task<IActionResult> PreviewGridBot([FromQuery] decimal investment = 0)
         {
@@ -110,7 +111,7 @@ namespace TradingBotAPI.Controllers
         }
     }
 
-    // ✅ Request model
+    // ✅ Strongly typed request model
     public class GridBotRequest
     {
         public decimal Lower { get; set; }
