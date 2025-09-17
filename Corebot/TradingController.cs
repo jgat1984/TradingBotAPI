@@ -8,7 +8,7 @@ using TradingBotAPI.Services;
 namespace TradingBotAPI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/[controller]")]   // 👈 Base route: /api/trading
     public class TradingController : ControllerBase
     {
         private readonly TradeRepository _tradeRepo;
@@ -84,9 +84,7 @@ namespace TradingBotAPI.Controllers
         public IActionResult GetGridLevels(decimal lower, decimal upper, int grids)
         {
             if (grids <= 0 || lower >= upper)
-            {
                 return BadRequest("Invalid parameters");
-            }
 
             decimal stepSize = (upper - lower) / grids;
             var levels = new List<decimal>();
