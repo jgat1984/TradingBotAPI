@@ -31,10 +31,10 @@ namespace TradingBotAPI.Controllers
         public IActionResult StartGridBot([FromBody] GridBotRequest request)
         {
             if (request == null)
-                return BadRequest("Request body is missing.");
+                return BadRequest(new { error = "Request body is missing." });
 
             if (request.Grids <= 0 || request.Lower >= request.Upper)
-                return BadRequest("Invalid bot parameters.");
+                return BadRequest(new { error = "Invalid bot parameters." });
 
             _tradingService.StartGridBot(
                 request.Lower,
@@ -43,7 +43,15 @@ namespace TradingBotAPI.Controllers
                 request.Investment
             );
 
-            return Ok(new { message = "Grid bot started" });
+            // ✅ JSON response
+            return Ok(new
+            {
+                message = "Grid bot started",
+                lower = request.Lower,
+                upper = request.Upper,
+                grids = request.Grids,
+                investment = request.Investment
+            });
         }
 
         // --------------------------
@@ -53,7 +61,12 @@ namespace TradingBotAPI.Controllers
         public IActionResult StopGridBot()
         {
             _tradingService.StopGridBot();
-            return Ok(new { message = "Grid bot stopped" });
+
+            // ✅ JSON response
+            return Ok(new
+            {
+                message = "Grid bot stopped"
+            });
         }
 
         // --------------------------
@@ -69,6 +82,50 @@ namespace TradingBotAPI.Controllers
         // --------------------------
         // GET LATEST PRICE
         // --------------------------
+        [HttpGet("get-latest-price")]
+        public async Task<IActionResult> GetLatestPrice(string pair = "XRPUSD")
+        {
+            var price = await _kraken.GetLatestPriceAsync(pair);
+            return Ok(new { Pair = pair, Price = price });
+        }
+
+        // --------------------------
+        // GET SESSION PROFIT
+        // --------------------------
+        [HttpGet("session-profit")]
+        public IActionResult GetSessionProfit()
+        {
+            var profit = _tradingService.GetSessionProfit();
+            return Ok(new { sessionProfit = profit });
+        }
+
+        // --------------------------
+        // PREVIEW GRID LEVELS
+        // --------------------------
+        [HttpGet("preview-gridbot")]
+        public IActionResult PreviewGridLevels(decimal lower, decimal upper, int grids)
+        {
+            if (grids <= 0 || lower >= upper)
+                return BadRequest(new { error = "Invalid parameters" });
+
+            decimal stepSize = (upper - lower) / grids;
+            var levels = new List<decimal>();
+
+            for (int i = 0; i <= grids; i++)
+            {
+                levels.Add(lower + (stepSize * i));
+            }
+
+            return Ok(new
+            {
+                lower = lower,
+                upper = upper,
+                grids = grids,
+                levels = levels
+            });
+        }
+    }
+}
         [HttpGet("get-latest-price")]
         public async Task<IActionResult> GetLatestPrice(string pair = "XRPUSD")
         {
