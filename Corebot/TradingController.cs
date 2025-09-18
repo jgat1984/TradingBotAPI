@@ -25,7 +25,7 @@ namespace TradingBotAPI.Controllers
         }
 
         // --------------------------
-        // START GRID BOT (POST only)
+        // START GRID BOT (POST)
         // --------------------------
         [HttpPost("start-gridbot")]
         public IActionResult StartGridBot([FromBody] GridBotRequest request)
@@ -43,7 +43,6 @@ namespace TradingBotAPI.Controllers
                 request.Investment
             );
 
-            // ✅ JSON response
             return Ok(new
             {
                 message = "Grid bot started",
@@ -55,18 +54,52 @@ namespace TradingBotAPI.Controllers
         }
 
         // --------------------------
-        // STOP GRID BOT (POST only)
+        // START GRID BOT (GET - for browser testing)
+        // Example:
+        // https://tradingbotapi.onrender.com/api/trading/start-gridbot?lower=1&upper=10&grids=4&investment=1000
+        // --------------------------
+        [HttpGet("start-gridbot")]
+        public IActionResult StartGridBotQuery(
+            [FromQuery] decimal lower,
+            [FromQuery] decimal upper,
+            [FromQuery] int grids,
+            [FromQuery] decimal investment)
+        {
+            if (grids <= 0 || lower >= upper)
+                return BadRequest(new { error = "Invalid parameters." });
+
+            _tradingService.StartGridBot(lower, upper, grids, investment);
+
+            return Ok(new
+            {
+                message = "Grid bot started (via GET)",
+                lower,
+                upper,
+                grids,
+                investment
+            });
+        }
+
+        // --------------------------
+        // STOP GRID BOT (POST)
         // --------------------------
         [HttpPost("stop-gridbot")]
         public IActionResult StopGridBot()
         {
             _tradingService.StopGridBot();
+            return Ok(new { message = "Grid bot stopped" });
+        }
 
-            // ✅ JSON response
-            return Ok(new
-            {
-                message = "Grid bot stopped"
-            });
+        // --------------------------
+        // STOP GRID BOT (GET - for browser testing)
+        // Example:
+        // https://tradingbotapi.onrender.com/api/trading/stop-gridbot
+        // --------------------------
+        [HttpGet("stop-gridbot")]
+        public IActionResult StopGridBotQuery()
+        {
+            _tradingService.StopGridBot();
+            return Ok(new { message = "Grid bot stopped (via GET)" });
         }
 
         // --------------------------
@@ -118,54 +151,10 @@ namespace TradingBotAPI.Controllers
 
             return Ok(new
             {
-                lower = lower,
-                upper = upper,
-                grids = grids,
-                levels = levels
-            });
-        }
-    }
-}
-        [HttpGet("get-latest-price")]
-        public async Task<IActionResult> GetLatestPrice(string pair = "XRPUSD")
-        {
-            var price = await _kraken.GetLatestPriceAsync(pair);
-            return Ok(new { Pair = pair, Price = price });
-        }
-
-        // --------------------------
-        // GET SESSION PROFIT
-        // --------------------------
-        [HttpGet("session-profit")]
-        public IActionResult GetSessionProfit()
-        {
-            var profit = _tradingService.GetSessionProfit();
-            return Ok(new { sessionProfit = profit });
-        }
-
-        // --------------------------
-        // PREVIEW GRID LEVELS
-        // --------------------------
-        [HttpGet("preview-gridbot")]
-        public IActionResult PreviewGridLevels(decimal lower, decimal upper, int grids)
-        {
-            if (grids <= 0 || lower >= upper)
-                return BadRequest("Invalid parameters");
-
-            decimal stepSize = (upper - lower) / grids;
-            var levels = new List<decimal>();
-
-            for (int i = 0; i <= grids; i++)
-            {
-                levels.Add(lower + (stepSize * i));
-            }
-
-            return Ok(new
-            {
-                Lower = lower,
-                Upper = upper,
-                Grids = grids,
-                Levels = levels
+                lower,
+                upper,
+                grids,
+                levels
             });
         }
     }
