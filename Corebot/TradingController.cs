@@ -8,7 +8,7 @@ using TradingBotAPI.Services;
 namespace TradingBotAPI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]   // 👈 Base route: /api/trading
+    [Route("api/[controller]")]   // Base route: /api/trading
     public class TradingController : ControllerBase
     {
         private readonly TradeRepository _tradeRepo;
@@ -25,21 +25,38 @@ namespace TradingBotAPI.Controllers
         }
 
         // --------------------------
-        // START GRID BOT
+        // START GRID BOT (GET or POST)
         // --------------------------
+        [HttpGet("start-gridbot")]
         [HttpPost("start-gridbot")]
-        public IActionResult StartGridBot([FromBody] GridBotRequest request)
+        public IActionResult StartGridBot(
+            [FromBody] GridBotRequest? request,
+            decimal? lower, decimal? upper, int? grids, decimal? investment)
         {
-            if (request == null || request.Grids <= 0 || request.Lower >= request.Upper)
-                return BadRequest("Invalid bot parameters");
+            if (request == null)
+            {
+                // Handle GET via querystring
+                if (!lower.HasValue || !upper.HasValue || !grids.HasValue || !investment.HasValue)
+                    return BadRequest("Missing parameters");
 
-            _tradingService.StartGridBot(request.Lower, request.Upper, request.Grids, request.Investment);
-            return Ok(new { message = "Grid bot started", request });
+                _tradingService.StartGridBot(lower.Value, upper.Value, grids.Value, investment.Value);
+            }
+            else
+            {
+                // Handle POST via JSON body
+                if (request.Grids <= 0 || request.Lower >= request.Upper)
+                    return BadRequest("Invalid bot parameters");
+
+                _tradingService.StartGridBot(request.Lower, request.Upper, request.Grids, request.Investment);
+            }
+
+            return Ok(new { message = "Grid bot started" });
         }
 
         // --------------------------
-        // STOP GRID BOT
+        // STOP GRID BOT (GET or POST)
         // --------------------------
+        [HttpGet("stop-gridbot")]
         [HttpPost("stop-gridbot")]
         public IActionResult StopGridBot()
         {
