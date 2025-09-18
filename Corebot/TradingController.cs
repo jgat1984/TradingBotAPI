@@ -25,47 +25,32 @@ namespace TradingBotAPI.Controllers
         }
 
         // --------------------------
-        // START GRID BOT (POST JSON)
+        // START GRID BOT (POST only)
         // --------------------------
         [HttpPost("start-gridbot")]
         public IActionResult StartGridBot([FromBody] GridBotRequest request)
         {
-            if (request == null || request.Grids <= 0 || request.Lower >= request.Upper)
-                return BadRequest("Invalid bot parameters");
+            if (request == null)
+                return BadRequest("Request body is missing.");
 
-            _tradingService.StartGridBot(request.Lower, request.Upper, request.Grids, request.Investment);
+            if (request.Grids <= 0 || request.Lower >= request.Upper)
+                return BadRequest("Invalid bot parameters.");
+
+            _tradingService.StartGridBot(
+                request.Lower,
+                request.Upper,
+                request.Grids,
+                request.Investment
+            );
+
             return Ok(new { message = "Grid bot started" });
         }
 
         // --------------------------
-        // START GRID BOT (GET Query)
-        // Example: /api/trading/start-gridbot?lower=0.45&upper=0.65&grids=10&investment=100
-        // --------------------------
-        [HttpGet("start-gridbot")]
-        public IActionResult StartGridBotQuery(decimal lower, decimal upper, int grids, decimal investment)
-        {
-            if (grids <= 0 || lower >= upper)
-                return BadRequest("Invalid parameters");
-
-            _tradingService.StartGridBot(lower, upper, grids, investment);
-            return Ok(new { message = "Grid bot started" });
-        }
-
-        // --------------------------
-        // STOP GRID BOT (POST)
+        // STOP GRID BOT (POST only)
         // --------------------------
         [HttpPost("stop-gridbot")]
         public IActionResult StopGridBot()
-        {
-            _tradingService.StopGridBot();
-            return Ok(new { message = "Grid bot stopped" });
-        }
-
-        // --------------------------
-        // STOP GRID BOT (GET)
-        // --------------------------
-        [HttpGet("stop-gridbot")]
-        public IActionResult StopGridBotQuery()
         {
             _tradingService.StopGridBot();
             return Ok(new { message = "Grid bot stopped" });
@@ -102,10 +87,10 @@ namespace TradingBotAPI.Controllers
         }
 
         // --------------------------
-        // GET GRID LEVELS
+        // PREVIEW GRID LEVELS
         // --------------------------
-        [HttpGet("grid-levels")]
-        public IActionResult GetGridLevels(decimal lower, decimal upper, int grids)
+        [HttpGet("preview-gridbot")]
+        public IActionResult PreviewGridLevels(decimal lower, decimal upper, int grids)
         {
             if (grids <= 0 || lower >= upper)
                 return BadRequest("Invalid parameters");
